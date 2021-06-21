@@ -36,6 +36,7 @@ class SinglyLinkedList:
         self.__last = None
         self.__len = 0
     
+    # Append node to list
     def append(self, data):
         """ Append data at end of list
             e.g. 
@@ -52,6 +53,7 @@ class SinglyLinkedList:
         
         self.__len += 1        
 
+    # Remove node from List
     def remove(self, data):
         """ Remove element from list
             if element not exist perform noop.
@@ -125,18 +127,21 @@ class TreeNode(object):
         self.company_name = company_name
         self.children = SinglyLinkedList()
 
+    # add child node for given TreeNode
     def append_child(self, node):
         """ insert node at end
         """
         self.children.append(node)
 
+    # delete child node for given TreeNode
     def delete_child(self, node):
         """ insert node at end
         """
         self.children.remove(node)
 
+    # Preorder traversal provide node and its parent.
     def find_node_and_parent(self, company, parent_node = None):
-        """ Find node 
+        """ Find node using preorder search
         """
         if(self.company_name == company):
             return self , parent_node
@@ -149,7 +154,7 @@ class TreeNode(object):
         return None, None
     
     # del all subtree
-    # This will all subtree when user invoked del TreeNodeInstance
+    # This will delete all subtree when user invoked del TreeNodeInstance
     def __del__(self):
         del self.children
 
@@ -177,7 +182,7 @@ class Tree:
         if(data is None):
             return False, "Invalid data: Value None"
 
-        # Create new node
+        # Create new root node
         if(self.__root is None):
             if(parent is None):
                 self.__root = TreeNode(data)
@@ -185,57 +190,67 @@ class Tree:
             else:
                 return False, "No Data exist in tree"
 
+        # Parent must be null if we want to insert root node
         if parent is None:
             return False, "Parent node is NULL"
 
+        # Validate company already exist in tree
         node, _ = self.__root.find_node_and_parent(data)
 
         if node is not None:
             return False, "Company already exist"
 
-        node, node_parent = self.__root.find_node_and_parent(parent)
+        # Lookup parent company node in tree
+        node, _ = self.__root.find_node_and_parent(parent)
         
+        # If node not exist return false
         if(node is None):
             return False, "Parent node exist in tree"
 
+        # add child node
         node.append_child(TreeNode(data))
 
         return True, ""
 
+    # Find company and its parent in tree using preorder search
     def find_node_and_parent(self, node):
         if(self.__root is None):
             return None, None
         
         return self.__root.find_node_and_parent(node)
             
+    # delete company
     def delete_node(self, data):
         if(self.__root is None):
             return False, "Tree is Empty"
         
+        # Find node in tree
         node, parent = self.__root.find_node_and_parent(data)
 
+        # No node not exist, return error
         if node is None:
             return False, "Node not present in tree"
 
-        if parent is None: # Its root node
+        # Node found but its root node.
+        if parent is None:
             self.__root = None
             del node
             return True, ""
         
+        # delete child node
         parent.delete_child(node)
         del node
 
         return True, ""
 
+    # returns true if tree is empty
     def is_empty(self):
         if self.__root is None:
             return True
         return False
 
-        
-
 #---------------------------------------------------
-# Helper class to perfor input reading and execution
+# Helper class to perform input reading and execution
 #---------------------------------------------------
 class IOHelper:
     """Helper class to read decode and execute input
@@ -250,14 +265,19 @@ class IOHelper:
     CMD_RELEASE = "RELEASE"
     CMD_ACQUIRED = "ACQUIRED"
 
+    # constructor
     def __init__(self, input_file = "inputPS5.txt", output_file = "outputPS5.txt"):
         self.input_file = input_file
-
+        self.max_operation_count = 2
+        self.operation_counter = 0
+        
+        # Open file in write mode
         try:
             IOHelper.outfile_handle = open( output_file, "w" )
         except EnvironmentError:
             print('Failed to open file in write mode', input_file)
 
+    # This will read input file and execute operation on tree
     def decode_and_execute_operation(self):
 
         try:
@@ -266,26 +286,47 @@ class IOHelper:
                     line = f.readline()
                     if not line:
                         break
-                    self.execute(line)
+                    if self.execute(line) == False:
+                        break
 
         except EnvironmentError:
             print('Failed to read file', self.input_file)
         
+    # Execute single operation from file
+    # Param: line -> Detail ce
     def execute(self, line):
         cmd = line.split()
         if(len(cmd) == 2):
-            # Root node
+            # Create root node
             if(cmd[0].lower() == self.CMD_ROOT_NODE.lower()):
                 Tree.get_instance().add_node(cmd[1])
+            # Print detail of company
             if(cmd[0].lower() == self.CMD_DETAILS.lower()):
                 detail(cmd[1])
+            # Release company
             if(cmd[0].lower() == self.CMD_RELEASE.lower()):
                 release(cmd[1])
+            # Aquire company
             if(cmd[0][0:len(self.CMD_ACQUIRED)].lower() == self.CMD_ACQUIRED.lower()):
                 child = cmd[0].split(":")[-1]
                 parent = cmd[1].split(":")[-1]
                 acquire(parent, child)
+        # No of operation command
+        elif(len(cmd) == 4):
+            if(" ".join(cmd[0:3]).lower() == self.CMD_NUM_OPERATION.lower()):
+                try : 
+                    self.max_operation_count = int(cmd[3])
+                except ValueError :
+                    print("Invalid instruction count")
+        else:
+            print("Invalid instruction")
 
+        self.operation_counter += 1
+        if  self.max_operation_count + 2 > self.operation_counter:
+                return True
+        return False
+
+    # Print output to file
     def Print(str):
         if(IOHelper.outfile_handle == None):
             print(str)
@@ -301,20 +342,22 @@ def detail(company_name):
     """
     if(Tree.get_instance().is_empty()):
         IOHelper.Print("No Company data exist")
+        return
     
+    # Find node in tree
     node, _ = Tree.get_instance().find_node_and_parent(company_name)
 
     if(node != None):
         IOHelper.Print("DETAIL: {0}".format(node.company_name))
         if(len(node.children)):
-            children = [ child.company_name for child in node.children]
+            children = [ child.company_name for child in node.children ]
             IOHelper.Print("Acquired companies: {0}".format(", ".join(children)))
         else:
             IOHelper.Print("Acquired companies: none")
 
         IOHelper.Print("No of companies acquired: {0}".format(len(node.children)))
     else:
-        IOHelper.Print("Company does not exist")
+        IOHelper.Print("{0} Company does not exist".format(company_name))
 
 
 #---------------------------------------------------
@@ -325,8 +368,10 @@ def acquire(parent_company, acquired_company):
     """
 
     if(Tree.get_instance().is_empty()):
-        IOHelper.Print("No Company data exist")
+        IOHelper.Print("[Error] No Company data exist")
+        return
     
+    # Add node to tree, tree will take care of handling duplicate
     success , _ = Tree.get_instance().add_node(acquired_company, parent_company)
 
     if(success):
@@ -341,11 +386,13 @@ def release(released_company):
     """remove
     """
     if(Tree.get_instance().is_empty()):
-        IOHelper.Print("No Company data exist")
+        IOHelper.Print("[Error] No Company data exist")
+        return
     
+    # Delete company delete
     success, _ = Tree.get_instance().delete_node(released_company)
 
-    ## Make sure node exist
+    ## Make sure node deleted
     if(success):
         IOHelper.Print("RELEASED SUCCESS: released {0} successfully.".format(released_company))
     else:
