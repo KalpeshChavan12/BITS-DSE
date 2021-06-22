@@ -158,6 +158,14 @@ class TreeNode(object):
     def __del__(self):
         del self.children
 
+    # Post order traversal
+    # this will enable travesal using loop 
+    def __iter__(self):
+        for child in self.children:
+            for c in child:
+                yield c
+        yield self
+
 #----------------------------------
 # N-ary tree implementaion
 #----------------------------------
@@ -219,29 +227,28 @@ class Tree:
         
         return self.__root.find_node_and_parent(node)
             
-    # delete company
+    # delete company and return reference of deleted node
+    # user need to call del (node) explicity to cleanup memory
     def delete_node(self, data):
         if(self.__root is None):
-            return False, "Tree is Empty"
+            return False, None, "Tree is Empty"
         
         # Find node in tree
         node, parent = self.__root.find_node_and_parent(data)
 
         # No node not exist, return error
         if node is None:
-            return False, "Node not present in tree"
+            return False, None, "Node not present in tree"
 
         # Node found but its root node.
         if parent is None:
             self.__root = None
-            del node
-            return True, ""
+            return True, node, ""
         
         # delete child node
         parent.delete_child(node)
-        del node
 
-        return True, ""
+        return True, node, ""
 
     # returns true if tree is empty
     def is_empty(self):
@@ -341,7 +348,7 @@ def detail(company_name):
     """this function prints the parent and immediate children of company
     """
     if(Tree.get_instance().is_empty()):
-        IOHelper.Print("No Company data exist")
+        IOHelper.Print("[Error] No Company data exist")
         return
     
     # Find node in tree
@@ -390,11 +397,14 @@ def release(released_company):
         return
     
     # Delete company delete
-    success, _ = Tree.get_instance().delete_node(released_company)
+    success, node, _ = Tree.get_instance().delete_node(released_company)
 
     ## Make sure node deleted
     if(success):
-        IOHelper.Print("RELEASED SUCCESS: released {0} successfully.".format(released_company))
+        for company in node:
+            IOHelper.Print("RELEASED SUCCESS: released {0} successfully.".format(company.company_name))
+        # delete subtree (perform cleanup, node already detached from tree)
+        del node
     else:
         IOHelper.Print("RELEASED FAILED: released {0} failed.".format(released_company))
 

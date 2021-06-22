@@ -33,3 +33,15 @@ No of companies acquired: 3
 DETAIL: lifescience
 Acquired companies: none
 No of companies acquired: 0
+RELEASED SUCCESS: released additive successfully.
+RELEASED SUCCESS: released aviation successfully.
+RELEASED SUCCESS: released wind-energy successfully.
+RELEASED SUCCESS: released solar-energy successfully.
+RELEASED SUCCESS: released appliances successfully.
+RELEASED SUCCESS: released power successfully.
+RELEASED SUCCESS: released ct-manufacturer successfully.
+RELEASED SUCCESS: released lifescience successfully.
+RELEASED SUCCESS: released pharma successfully.
+RELEASED SUCCESS: released healthcare successfully.
+RELEASED SUCCESS: released ce successfully.
+[Error] No Company data exist
