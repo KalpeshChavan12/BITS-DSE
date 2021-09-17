@@ -13,8 +13,9 @@
     Dataset
 
 
-# Data set location
-# Update dataset file location before running notebook
+**Data set location**
+Update dataset file location before running notebook
 
+```
 datafile = "C:\\Users\\kachavan\\Documents\\GitHub\\BITS-DSE\\Courses\\Semester01\\DM\\Heart_Attack_Analysis_Data.csv"
-
+```
